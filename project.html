@@ -38,7 +38,9 @@
           <li role="presentation" ng-class="{active: state.current.name == 'project.tracking'}"><a href="#/{{id}}/tracking">Tracking</a></li>
           <li role="presentation" ng-class="{active: state.current.name == 'project.summary'}"><a href="#/{{id}}/summary">Summary</a></li>
         </ul>
-        <h3><input ng-model="node.title"></h3>
+        <form class="form-inline">
+          <input ng-model="node.title" class="form-control taskname" size=50>
+        </form>
         <div ui-view="area"></div>
       </div>
     </div>

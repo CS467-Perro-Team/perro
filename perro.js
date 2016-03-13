@@ -81,9 +81,8 @@ MyApp.controller('ProjectController', function($scope, $state, $window, $timeout
     $scope.data = JSON.parse(data);
   }
 
-  console.log($stateParams.id);
-
   if ($stateParams.id) {
+    $scope.id = $stateParams.id;
     $scope.node = getNode($scope.data, $stateParams.id);
   }
 

@@ -14,8 +14,7 @@
     "tests"
   ],
   "dependencies": {
-    "angular-ui-router": "~0.2.18",
-    "bootstrap": "~3.3.6",
-    "font-awesome": "~4.5.0"
+    "angular-ui-tree": "~2.15.0",
+    "bootstrap-datepicker": "~1.6.0"
   }
 }

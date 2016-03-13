@@ -50,13 +50,15 @@ var getMinMaxDates = function(node) {
 
     // Get minimum date for this node.
     if (node[i].data) {
-      for (var j = 0; j < node[i].data.length; j++) {
-        var data_date = new Date(node[i].data[j].date);
-        if (data_date < min_date) {
-          min_date = data_date;
-        }
-        if (data_date > max_date) {
-          max_date = data_date;
+      for (var username in node[i].data) {
+        for (var date in node[i].data[username]) {
+          var date_obj = new Date(date);
+          if (date_obj < min_date) {
+            min_date = date_obj;
+          }
+          if (date_obj > max_date) {
+            max_date = date_obj;
+          }
         }
       }
     }
@@ -81,9 +83,9 @@ var getMinMaxDates = function(node) {
 
 var getDateRange = function(min_date, max_date) {
   // Find the start and end in 1w offsets.
-  var start = min_date;
+  var start = new Date(min_date);
   start.setDate(min_date.getDate() - min_date.getDay());
-  var end = max_date;
+  var end = new Date(max_date);
   end.setDate(end.getDate() + (7 - end.getDay()));
 
   // Generate the date range in 1w increments.
@@ -96,69 +98,112 @@ var getDateRange = function(min_date, max_date) {
   return date_range;
 };
 
-var visitNodes = function(node, start, end, cb) {
+var getUsernames = function(node) {
+  var usernames = {};
+  for (var i = 0; i < node.length; i++) {
+    for (var username in node[i].data) {
+      usernames[username] = true;
+    }
+
+    var child_usernames = getUsernames(node[i].nodes);
+
+    for (var child in child_usernames) {
+      usernames[child] = true;
+    }
+  }
+
+  return usernames;
+};
+
+var visitNodes = function(node, username, start, end, callback) {
   for (var i = 0; i < node.length; i++) {
 
     // Traverse this node's data.
     if (node[i].data) {
-      for (var j = 0; j < node[i].data.length; j++) {
-        var data_date = new Date(node[i].data[j].date);
-        if (data_date >= start && data_date < end) {
-          cb(node[i].data[j]);
+      for (var date in node[i].data[username]) {
+        var date_obj = new Date(date);
+        if (date_obj >= start && date_obj < end) {
+          callback(node[i].data[username][date]);
         }
       }
     }
 
     // Traverse this node's children.
     if (node[i].nodes) {
-      visitNodes(node[i].nodes, start, end, cb);
+      visitNodes(node[i].nodes, username, start, end, callback);
     }
   }
 };
 
 var getTrackingSeries = function(node) {
+  var usernames = getUsernames(node);
+
   var min_max_dates = getMinMaxDates(node);
   if (min_max_dates.max < new Date()) {
     min_max_dates.max = new Date();
   }
   var date_range = getDateRange(min_max_dates.min, min_max_dates.max);
 
-  var progress = Array(date_range.length);
-  var remaining = Array(date_range.length);
-  var total = Array(date_range.length);
+  var progress = {};
+  var remaining = {};
+  var total = {};
+  var username, t;
 
-  // Walk the node in time order.
-  var t;
-  for (t = 0; t < date_range.length - 1; t++) {
-    var start = date_range[t];
-    var end = date_range[t+1];
+  // Walk the nodes for each user.
+  for (username in usernames) {
+    progress[username] = Array(date_range.length);
+    remaining[username] = Array(date_range.length);
+    total[username] = Array(date_range.length);
 
-    // progress and remaining carry forward from previous interval.
-    if (t === 0) {
-      progress[t] = 0;
-      remaining[t] = 0;
-    } else {
-      progress[t] = progress[t-1];
-      remaining[t] = remaining[t-1];
+    // Walk the nodes in time order.
+    for (t = 0; t < date_range.length - 1; t++) {
+      var start = date_range[t];
+      var end = date_range[t+1];
+
+      // progress and remaining carry forward from previous interval.
+      if (t === 0) {
+        progress[username][t] = 0;
+        remaining[username][t] = 0;
+      } else {
+        progress[username][t] = progress[username][t-1];
+        remaining[username][t] = remaining[username][t-1];
+      }
+
+      visitNodes(node, username, start, end, function(data) {
+        progress[username][t] += data.progress;
+        remaining[username][t] = data.remaining;
+      });
+
+      total[username][t] = progress[username][t] + remaining[username][t];
     }
-
-    visitNodes(node, start, end, function(data) {
-      progress[t] += data.progress;
-      remaining[t] = data.remaining;
-    });
-
-    total[t] = progress[t] + remaining[t];
   }
 
-  // zip the result into a timeseries.
+  // Sum all users for a total count per interval.
+  progress_sum = Array(date_range.length);
+  remaining_sum = Array(date_range.length);
+  total_sum = Array(date_range.length);
+
+  for (t = 0; t < date_range.length - 1; t++) {
+    progress_sum[t] = 0;
+    remaining_sum[t] = 0;
+    total_sum[t] = 0;
+
+    for (username in usernames) {
+      progress_sum[t] += progress[username][t];
+      remaining_sum[t] += remaining[username][t];
+      total_sum[t] += total[username][t];
+    }
+  }
+  
+  // Zip the result into a timeseries.
   var progress_series = [];
   var remaining_series = [];
   var total_series = [];
 
   for (t = 0; t < date_range.length - 1; t++) {
-    progress_series.push([date_range[t].getTime(), progress[t]]);
-    remaining_series.push([date_range[t].getTime(), remaining[t]]);
-    total_series.push([date_range[t].getTime(), total[t]]);
+    progress_series.push([date_range[t].getTime(), progress_sum[t]]);
+    remaining_series.push([date_range[t].getTime(), remaining_sum[t]]);
+    total_series.push([date_range[t].getTime(), total_sum[t]]);
   }
 
   return [
@@ -214,6 +259,8 @@ MyApp.config(function($stateProvider, $urlRouterProvider) {
 
 MyApp.controller('ProjectController', function($scope, $state, $stateParams) {
 
+  $scope.state = $state;
+
   var data = window.localStorage['project.data'];
   if (data === undefined) {
     $scope.data = [{
@@ -244,7 +291,7 @@ MyApp.controller('ProjectController', function($scope, $state, $stateParams) {
   };
 
   $scope.selectNode = function(id) {
-    $state.go('project.insert', {'id': id});
+    $state.go($state.current.name, {'id': id});
   };
 
 });
@@ -269,17 +316,22 @@ MyApp.controller('InsertController', function($scope, $state) {
       alert('Remaining must be >= 0');
       return;
     }
-
-    if ($scope.$parent.node.data === undefined) {
-      $scope.$parent.node.data = [];
+    if ($scope.username === undefined) {
+      $scope.username = 'null';
     }
 
-    $scope.$parent.node.data.push({
-      date: $scope.date,
-      username: $scope.username,
+    if ($scope.$parent.node.data === undefined) {
+      $scope.$parent.node.data = {};
+    }
+
+    if ($scope.$parent.node.data[$scope.username] === undefined) {
+      $scope.$parent.node.data[$scope.username] = {};
+    }
+
+    $scope.$parent.node.data[$scope.username][$scope.date] = {
       progress: $scope.progress,
       remaining: $scope.remaining
-    });
+    };
   };
 
   $scope.removeData = function(date, username) {
@@ -287,18 +339,18 @@ MyApp.controller('InsertController', function($scope, $state) {
     if (!result) {
       return;
     }
-    for (var i in $scope.$parent.node.data) {
-      if ($scope.$parent.node.data[i].date === date &&
-          $scope.$parent.node.data[i].username === username) {
-        $scope.$parent.node.data.splice(i, 1);
-        return;
-      }
+
+    // Remove the data at this location.
+    delete $scope.$parent.node.data[username][date];
+
+    // Remove the username if this was the last data point for it.
+    if (Object.keys($scope.$parent.node.data[username]).length === 0) {
+      delete $scope.$parent.node.data[username];
     }
   };
 });
 
 MyApp.controller('TrackingController', function($scope, $state) {
-  $scope.dates = getMinMaxDates([$scope.$parent.node]);
   /*
   $scope.series = [
     {

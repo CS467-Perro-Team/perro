@@ -8,8 +8,8 @@
     <form class="form-inline" ng-submit="addData()">
       <input class="form-control" type="date" ng-model="date" size=10 placeholder="Date">
       <input class="form-control" ng-model="username" placeholder="Username" size=10>
-      <input class="form-control" type="number" ng-model="progress" placeholder="Progress" style="width: 100px">
-      <input class="form-control" type="number" ng-model="remaining" placeholder="Remain" style="width: 100px">
+      <input class="form-control" type="number" min="0" step=".01" ng-model="progress" placeholder="Progress" style="width: 100px">
+      <input class="form-control" type="number" min="0" step=".01" ng-model="remaining" placeholder="Remain" style="width: 100px">
       <input type="submit" class="btn btn-default"></input>
     </form>
   </div>
@@ -20,21 +20,21 @@
     <h3 class="panel-title">Review Data</h3>
   </div>
   <div class="panel-body">
-    <table class="table">
-    <tr>
-      <th></th>
-      <th>Date</th>
-      <th>Username</th>
-      <th>Progress</th>
-      <th>Remaining</th>
-    </tr>
-    <tr ng-repeat="data in $parent.node.data | orderBy : 'date' track by $index ">
-      <td><i class="fa fa-times-circle" ng-click="removeData(data.date, data.username)"></i></td>
-      <td>{{data.date}}</td>
-      <td>{{data.username}}</td>
-      <td>{{data.progress}}</td>
-      <td>{{data.remaining}}</td>
-    </tr>
+    <table class="table" ng-repeat="(username, times) in $parent.node.data | orderBy : 'username'">
+      <tr>
+        <th></th>
+        <th>Date</th>
+        <th>Username</th>
+        <th>Progress</th>
+        <th>Remaining</th>
+      </tr>
+      <tr ng-repeat="(date, data) in times">
+        <td><i class="fa fa-times-circle" ng-click="removeData(date, username)"></i></td>
+        <td>{{date}}</td>
+        <td>{{username}}</td>
+        <td>{{data.progress}}</td>
+        <td>{{data.remaining}}</td>
+      </tr>
     </table>
   <pre class="code">{{ $parent.node | json }}</pre>
   </div>

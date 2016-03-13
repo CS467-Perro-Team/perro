@@ -237,12 +237,12 @@ MyApp.config(function($stateProvider, $urlRouterProvider) {
       },
     },
   })
-  .state('project.insert', {
-    url: '/insert',
+  .state('project.data', {
+    url: '/data',
     views: {
       'area': {
-        templateUrl: 'insert.html',
-        controller: 'InsertController'
+        templateUrl: 'data.html',
+        controller: 'DataController'
       }
     }
   })
@@ -296,7 +296,7 @@ MyApp.controller('ProjectController', function($scope, $state, $stateParams) {
 
 });
 
-MyApp.controller('InsertController', function($scope, $state) {
+MyApp.controller('DataController', function($scope, $state) {
 
   $scope.addData = function() {
     if ($scope.$parent.node === undefined) {

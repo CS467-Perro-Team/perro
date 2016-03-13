@@ -35,7 +35,7 @@ MyApp.config(function($stateProvider, $urlRouterProvider) {
   $urlRouterProvider.otherwise("/");
 
   $stateProvider
-  .state('init', {
+  .state('project', {
     url: "/:id",
     views: {
       "project": {
@@ -46,7 +46,24 @@ MyApp.config(function($stateProvider, $urlRouterProvider) {
   });
 });
 
-MyApp.controller('ProjectController', function($scope, $state, $window, $timeout) {
+MyApp.controller('ProjectController', function($scope, $state, $window, $timeout, $stateParams) {
+
+  $scope.id = $stateParams.id;
+
+  var data = window.localStorage['project.data'];
+  if (data === undefined) {
+    $scope.data = [{
+      'id': 1,
+      'title': 'Project Root',
+      'nodes': []
+    }];
+  } else {
+    $scope.data = JSON.parse(data);
+  }
+
+  $scope.$watch('data', function() {
+    window.localStorage['project.data'] = JSON.stringify($scope.data);
+  }, true);
 
   $scope.newSubItem = function (scope) {
     var nodeData = scope.$modelValue;
@@ -57,52 +74,8 @@ MyApp.controller('ProjectController', function($scope, $state, $window, $timeout
     });
   };
 
-  $scope.data = [{
-        'id': 1,
-        'title': 'node1',
-        'nodes': [
-          {
-            'id': 11,
-            'title': 'node1.1',
-            'nodes': [
-              {
-                'id': 111,
-                'title': 'node1.1.1',
-                'nodes': []
-              }
-            ]
-          },
-          {
-            'id': 12,
-            'title': 'node1.2',
-            'nodes': []
-          }
-        ]
-      }, {
-        'id': 2,
-        'title': 'node2',
-        'nodrop': true, // An arbitrary property to check in custom template for nodrop-enabled
-        'nodes': [
-          {
-            'id': 21,
-            'title': 'node2.1',
-            'nodes': []
-          },
-          {
-            'id': 22,
-            'title': 'node2.2',
-            'nodes': []
-          }
-        ]
-      }, {
-        'id': 3,
-        'title': 'node3',
-        'nodes': [
-          {
-            'id': 31,
-            'title': 'node3.1',
-            'nodes': []
-          }
-        ]
-      }];
+  $scope.selectNode = function(id) {
+    $state.go('project', {'id': id});
+  };
+
 });

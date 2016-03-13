@@ -32,10 +32,13 @@
         </div>
       </div>
       <div class="col-sm-6">
+        <h3><input ng-model="node.title"></h3>
+        
+
         <ul class="nav nav-pills" role="tablist">
-          <li role="presentation"><a href="#/{{id}}/insert">Insert</a></li>
+          <li role="presentation"><a href="#/{{id}}/insert">Data</a></li>
           <li role="presentation"><a href="#/{{id}}/tracking">Tracking</a></li>
-          <li role="presentation"><a href="#/{{id}}/raw">Raw</a></li>
+          <li role="presentation"><a href="#/{{id}}/summary">Summary</a></li>
         </ul>
         <div ui-view="area"></div>
       </div>

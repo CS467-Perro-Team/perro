@@ -14,7 +14,6 @@
     "tests"
   ],
   "dependencies": {
-    "angular-ui-tree": "~2.15.0",
-    "bootstrap-datepicker": "~1.6.0"
+    "angular-ui-tree": "~2.15.0"
   }
 }

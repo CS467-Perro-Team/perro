@@ -62,13 +62,14 @@ MyApp.config(function($stateProvider, $urlRouterProvider) {
     url: '/insert',
     views: {
       'area': {
-        templateUrl: 'insert.html'
+        templateUrl: 'insert.html',
+        controller: 'InsertController'
       }
     }
   });
 });
 
-MyApp.controller('ProjectController', function($scope, $state, $window, $timeout, $stateParams) {
+MyApp.controller('ProjectController', function($scope, $state, $stateParams) {
 
   var data = window.localStorage['project.data'];
   if (data === undefined) {
@@ -103,4 +104,52 @@ MyApp.controller('ProjectController', function($scope, $state, $window, $timeout
     $state.go('project.insert', {'id': id});
   };
 
+});
+
+MyApp.controller('InsertController', function($scope, $state) {
+
+  $scope.addData = function() {
+    if ($scope.$parent.node === undefined) {
+      alert('Unexpected error');
+      return;
+    }
+
+    if ($scope.date === null) {
+      alert('Invalid date');
+      return;
+    }
+    if ($scope.progress === null || $scope.progress < 0) {
+      alert('Progress must be >= 0');
+      return;
+    }
+    if ($scope.remaining === null || $scope.remaining < 0) {
+      alert('Remaining must be >= 0');
+      return;
+    }
+
+    if ($scope.$parent.node.data === undefined) {
+      $scope.$parent.node.data = [];
+    }
+
+    $scope.$parent.node.data.push({
+      date: $scope.date,
+      username: $scope.username,
+      progress: $scope.progress,
+      remaining: $scope.remaining
+    });
+  };
+
+  $scope.removeData = function(date, username) {
+    var result = confirm('Are you sure? There is no undo.');
+    if (!result) {
+      return;
+    }
+    for (var i in $scope.$parent.node.data) {
+      if ($scope.$parent.node.data[i].date === date &&
+          $scope.$parent.node.data[i].username === username) {
+        $scope.$parent.node.data.splice(i, 1);
+        return;
+      }
+    }
+  };
 });

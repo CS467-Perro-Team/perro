@@ -1,19 +1,16 @@
 
-<div class="page-header">
-  <h1><input ng-model="$parent.node.title"></h1>
-</div>
 
 <div class="panel panel-default">
   <div class="panel-heading">
     <h3 class="panel-title">Add Data</h3>
   </div>
   <div class="panel-body">
-    <form class="form-inline">
-    <input class="form-control" ng-model="date" data-provide="datepicker" size=10 placeholder="Date">
-    <input class="form-control" ng-model="username" placeholder="Username" size=10>
-    <input class="form-control" ng-model="progress" size=10 placeholder="Progress">
-    <input class="form-control" ng-model="remaining" size=10 placeholder="Remaining">
-    <button class="btn btn-default">Save</button>
+    <form class="form-inline" ng-submit="addData()">
+      <input class="form-control" type="date" ng-model="date" size=10 placeholder="Date">
+      <input class="form-control" ng-model="username" placeholder="Username" size=10>
+      <input class="form-control" type="number" ng-model="progress" placeholder="Progress" style="width: 100px">
+      <input class="form-control" type="number" ng-model="remaining" placeholder="Remain" style="width: 100px">
+      <input type="submit" class="btn btn-default"></input>
     </form>
   </div>
 </div>
@@ -23,6 +20,24 @@
     <h3 class="panel-title">Review Data</h3>
   </div>
   <div class="panel-body">
-    <pre class="code">{{ $parent.node | json }}</pre>
+    <table class="table">
+    <tr>
+      <th></th>
+      <th>Date</th>
+      <th>Username</th>
+      <th>Progress</th>
+      <th>Remaining</th>
+    </tr>
+    <tr ng-repeat="data in $parent.node.data | orderBy : 'date' track by $index ">
+      <td><i class="fa fa-times-circle" ng-click="removeData(data.date, data.username)"></i></td>
+      <td>{{data.date}}</td>
+      <td>{{data.username}}</td>
+      <td>{{data.progress}}</td>
+      <td>{{data.remaining}}</td>
+    </tr>
+    </table>
+  {{foo}}
+  <pre class="code">{{ date | json }}</pre>
+  <pre class="code">{{ $parent.node | json }}</pre>
   </div>
 </div>

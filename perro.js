@@ -28,6 +28,20 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+var getNode = function(data, id) {
+  for (var i = 0; i < data.length; i++) {
+    if (data[i].id == id) {
+      return data[i];
+    }
+
+    var node = getNode(data[i].nodes, id);
+    if (node) {
+      return node;
+    }
+  }
+
+  return undefined;
+};
 
 var MyApp = angular.module('MyApp', ['ui.router', 'ui.tree']);
 
@@ -36,19 +50,25 @@ MyApp.config(function($stateProvider, $urlRouterProvider) {
 
   $stateProvider
   .state('project', {
-    url: "/:id",
+    url: "/{id}",
     views: {
-      "project": {
+      'project': {
         templateUrl: "project.html",
-        controller: "ProjectController"
+        controller: 'ProjectController'
       },
     },
+  })
+  .state('project.insert', {
+    url: '/insert',
+    views: {
+      'area': {
+        templateUrl: 'insert.html'
+      }
+    }
   });
 });
 
 MyApp.controller('ProjectController', function($scope, $state, $window, $timeout, $stateParams) {
-
-  $scope.id = $stateParams.id;
 
   var data = window.localStorage['project.data'];
   if (data === undefined) {
@@ -59,6 +79,12 @@ MyApp.controller('ProjectController', function($scope, $state, $window, $timeout
     }];
   } else {
     $scope.data = JSON.parse(data);
+  }
+
+  console.log($stateParams.id);
+
+  if ($stateParams.id) {
+    $scope.node = getNode($scope.data, $stateParams.id);
   }
 
   $scope.$watch('data', function() {
@@ -75,7 +101,7 @@ MyApp.controller('ProjectController', function($scope, $state, $window, $timeout
   };
 
   $scope.selectNode = function(id) {
-    $state.go('project', {'id': id});
+    $state.go('project.insert', {'id': id});
   };
 
 });

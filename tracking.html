@@ -1,2 +1,19 @@
 
 <highchart config="chart_config"></highchart>
+
+<br><br>
+<table class="table">
+<tr>
+  <th>Date</th>
+  <th>Progress</th>
+  <th>Remaining</th>
+  <th>Total</th>
+</tr>
+<tr ng-repeat="t in series[0].data">
+  <td>{{series[0].data[$index][0] | date}}</td>
+  <td>{{series[0].data[$index][1]}}</td>
+  <td>{{series[1].data[$index][1]}}</td>
+  <td>{{series[2].data[$index][1]}}</td>
+</tr>
+</table>
+

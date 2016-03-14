@@ -350,13 +350,13 @@ MyApp.controller('ProjectController', function($scope, $state, $stateParams) {
 
   var data = window.localStorage['project.data'];
   if (data === undefined) {
-    $scope.data = [{
-      'id': 1,
-      'title': 'Project Root',
-      'nodes': []
-    }];
+    $scope.data = sample_data;
   } else {
     $scope.data = JSON.parse(data);
+
+    if ($scope.data.length === 0) {
+      $scope.data = sample_data;
+    }
   }
 
   if ($stateParams.id) {

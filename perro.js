@@ -303,7 +303,7 @@ var getSummaryTable = function(node) {
 var MyApp = angular.module('MyApp', ['ui.router', 'ui.tree', 'highcharts-ng']);
 
 MyApp.config(function($stateProvider, $urlRouterProvider) {
-  $urlRouterProvider.otherwise("/");
+  $urlRouterProvider.otherwise("/1/tracking");
 
   $stateProvider
   .state('project', {
@@ -458,9 +458,14 @@ MyApp.controller('TrackingController', function($scope, $state) {
       xAxis: {
         type: 'datetime'
       },
+      yAxis: {
+        title: {
+          text: 'Days Effort'
+        }
+      }
     },
     title: {
-      text: $scope.$parent.node.title
+      text: ''
     },
     series: $scope.series,
   };

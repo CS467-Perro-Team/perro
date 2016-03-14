@@ -368,6 +368,14 @@ MyApp.controller('ProjectController', function($scope, $state, $stateParams) {
     window.localStorage['project.data'] = JSON.stringify($scope.data);
   }, true);
 
+  $scope.removeSubItem = function (item) {
+    var result = confirm('Are you sure? There is no undo.');
+
+    if (result) {
+      item.remove();
+    }
+  };
+
   $scope.newSubItem = function (scope) {
     var nodeData = scope.$modelValue;
     nodeData.nodes.push({

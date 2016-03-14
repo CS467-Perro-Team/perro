@@ -2,7 +2,7 @@
 <!-- Nested node template -->
 <script type="text/ng-template" id="nodes_renderer.html">
   <div ui-tree-handle class="tree-node tree-node-content" ng-class="{selected: node.id == id}" ng-mousedown="selectNode(node.id)">
-    <a class="btn btn-success btn-xs" ng-if="node.nodes && node.nodes.length > 0" data-nodrag ng-click="toggle(this)">
+    <a class="btn btn-xs" ng-if="node.nodes && node.nodes.length > 0" data-nodrag ng-click="toggle(this)">
       <span
       class="glyphicon"
       ng-class="{
@@ -11,9 +11,9 @@
     }"></span>
   </a>
   {{node.title}}
-  <a class="pull-right btn btn-danger btn-xs" data-nodrag ng-click="remove(this)"><span
+  <a class="pull-right btn btn-xs" data-nodrag ng-click="removeSubItem(this)"><span
     class="glyphicon glyphicon-remove"></span></a>
-  <a class="pull-right btn btn-primary btn-xs" data-nodrag ng-click="newSubItem(this)" style="margin-right: 8px;"><span
+  <a class="pull-right btn btn-xs" data-nodrag ng-click="newSubItem(this)" style="margin-right: 8px;"><span
       class="glyphicon glyphicon-plus"></span></a>
   </div>
   <ol ui-tree-nodes="" ng-model="node.nodes" ng-class="{hidden: collapsed}">
@@ -23,7 +23,7 @@
 </script>
 
 <div style="display: flex">
-  <div style="min-width: 300px; width: 35%; margin-top: 10px; margin-left: 10px">
+  <div class="section_left">
     <ul class="nav nav-pills" role="tablist">
       <li role="presentation" class="active"><a><i class="fa fa-paw"></i> Project</a></li>
     </ul>
@@ -35,7 +35,7 @@
     </div>
   </div>
 
-  <div style="width: 65%; margin-top: 10px">
+  <div class="section_right">
     <ul class="nav nav-pills" role="tablist">
       <li role="presentation" ng-class="{active: state.current.name == 'project.summary'}"><a href="#/{{id}}/summary">Summary</a></li>
       <li role="presentation" ng-class="{active: state.current.name == 'project.data'}"><a href="#/{{id}}/data">Data</a></li>

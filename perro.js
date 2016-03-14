@@ -201,9 +201,9 @@ var getTrackingSeries = function(node) {
   var total_series = [];
 
   for (t = 0; t < date_range.length - 1; t++) {
-    progress_series.push([date_range[t].getTime(), progress_sum[t]]);
-    remaining_series.push([date_range[t].getTime(), remaining_sum[t]]);
-    total_series.push([date_range[t].getTime(), total_sum[t]]);
+    progress_series.push([date_range[t+1].getTime(), progress_sum[t]]);
+    remaining_series.push([date_range[t+1].getTime(), remaining_sum[t]]);
+    total_series.push([date_range[t+1].getTime(), total_sum[t]]);
   }
 
   return [
@@ -453,7 +453,7 @@ MyApp.controller('TrackingController', function($scope, $state) {
       //This is the Main Highcharts chart config. Any Highchart options are valid here.
       //will be overriden by values specified below.
       chart: {
-        
+        zoomType: 'x'
       },
       xAxis: {
         type: 'datetime'

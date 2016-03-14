@@ -11,3 +11,10 @@ run the application. The data is protected so long as you don't uninstall your b
 
 The raw data may be backed up by visiting the 'data' page and copying the json blob at the bottom of the page, or
 using a Chrome plugin like Storage Explorer.
+
+## License
+
+BSD License
+
+Copyright (c) 2016 Robert W. Rose
+All rights reserved.

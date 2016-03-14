@@ -1,0 +1,20 @@
+
+
+<table class="table">
+<tr>
+  <th>Task</th>
+  <th>Progress</th>
+  <th>Remaining</th>
+  <th>Total</th>
+  <th>% Complete</th>
+</tr>
+<tr ng-repeat="node in summary">
+  <td ng-style="{'padding-left': node.level * 16 + 8}">{{node.title}}</td>
+  <td>{{node.progress}}</td>
+  <td>{{node.remaining}}</td>
+  <td>{{node.total}}</td>
+  <td>{{((node.progress / node.total) * 100) | number: 2}}
+</tr>
+</table>
+
+<pre class="code">{{summary | json}}</pre>

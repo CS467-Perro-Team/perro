@@ -222,6 +222,84 @@ var getTrackingSeries = function(node) {
   ];
 };
 
+var dateSort = function(a, b) {
+  return new Date(a) - new Date(b);
+};
+
+var getSummaryTree = function(node) {
+  var results = [];
+
+  for (var i = 0; i < node.length; i++) {
+    var result = {
+      title: node[i].title,
+      progress: 0,
+      remaining: 0,
+      total: 0,
+      nodes: []
+    };
+
+    result.nodes = getSummaryTree(node[i].nodes);
+
+    for (var n in result.nodes) {
+      result.progress += result.nodes[n].progress;
+      result.remaining += result.nodes[n].remaining;
+    }
+
+    var progress = {};
+    var remaining = {};
+    var total = {};
+
+    // Summarize node by username.
+    for (var username in node[i].data) {
+      progress[username] = 0;
+      remaining[username] = 0;
+
+      // Retrieve date keys, sort chronologically.
+      var dates = Object.keys(node[i].data[username]);
+      dates.sort(dateSort);
+      for (var date in dates) {
+        // Add progress but take the last remaining as the value.
+        progress[username] += node[i].data[username][dates[date]].progress;
+        remaining[username] = node[i].data[username][dates[date]].remaining;
+      }
+
+      // Add per-user data.
+      result.progress += progress[username];
+      result.remaining += remaining[username];
+    }
+
+    // Determine sum total.
+    result.total = result.progress + result.remaining;
+    results.push(result);
+  }
+
+  return results;
+};
+
+var getSummaryTable = function(node) {
+  var tree = getSummaryTree(node);
+
+  var result = [];
+
+  var getSummaryTableNode = function(node, i) {
+    for (var n in node) {
+      result.push({
+        title: node[n].title,
+        level: i,
+        progress: node[n].progress,
+        remaining: node[n].remaining,
+        total: node[n].total
+      });
+
+      getSummaryTableNode(node[n].nodes, i+1);
+    }
+  };
+
+  getSummaryTableNode(tree, 0);
+
+  return result;
+};
+
 var MyApp = angular.module('MyApp', ['ui.router', 'ui.tree', 'highcharts-ng']);
 
 MyApp.config(function($stateProvider, $urlRouterProvider) {
@@ -236,6 +314,15 @@ MyApp.config(function($stateProvider, $urlRouterProvider) {
         controller: 'ProjectController'
       },
     },
+  })
+  .state('project.summary', {
+    url: '/summary',
+    views: {
+      'area': {
+        templateUrl: 'summary.html',
+        controller: 'SummaryController'
+      }
+    }
   })
   .state('project.data', {
     url: '/data',
@@ -351,18 +438,6 @@ MyApp.controller('DataController', function($scope, $state) {
 });
 
 MyApp.controller('TrackingController', function($scope, $state) {
-  /*
-  $scope.series = [
-    {
-      data: [
-        [(new Date("2010/01/01")).getTime(), 1],
-        [(new Date("2010/01/02")).getTime(), 2],
-        [(new Date("2010/01/03")).getTime(), 3],
-      ],
-      name: 'foo'
-    }
-  ];*/
-
   $scope.series = getTrackingSeries([$scope.$parent.node]);
 
   $scope.chart_config = {
@@ -381,4 +456,8 @@ MyApp.controller('TrackingController', function($scope, $state) {
     },
     series: $scope.series,
   };
+});
+
+MyApp.controller('SummaryController', function($scope, $state) {
+  $scope.summary = getSummaryTable([$scope.$parent.node]);
 });

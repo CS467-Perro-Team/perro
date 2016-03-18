@@ -1,0 +1,28 @@
+{
+  "name": "perro",
+  "version": "1.0.0",
+  "description": "a lightweight project management tool",
+  "main": "perro.js",
+  "dependencies": {
+    "angular-ui-router": "^0.2.18",
+    "angular-ui-tree": "^2.14.0",
+    "bootstrap": "~3.3.6",
+    "font-awesome": "~4.5.0",
+    "highcharts-ng": "~0.0.11",
+    "highcharts": "~4.2.3"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/moof2k/perro.git"
+  },
+  "author": "",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/moof2k/perro/issues"
+  },
+  "homepage": "https://github.com/moof2k/perro#readme"
+}

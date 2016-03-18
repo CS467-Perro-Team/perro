@@ -2,7 +2,7 @@
   "name": "perro",
   "version": "1.0.0",
   "description": "a lightweight project management tool",
-  "main": "perro.js",
+  "main": "electron.js",
   "dependencies": {
     "angular-ui-router": "^0.2.18",
     "angular-ui-tree": "^2.14.0",
@@ -11,7 +11,9 @@
     "highcharts-ng": "~0.0.11",
     "highcharts": "~4.2.3"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "electron-prebuilt": "^0.37.2"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

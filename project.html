@@ -1,7 +1,7 @@
 
 <!-- Nested node template -->
 <script type="text/ng-template" id="nodes_renderer.html">
-  <div ui-tree-handle class="tree-node tree-node-content" ng-class="{selected: node.id == id, padded: node.nodes.length === 0}" ng-mousedown="selectNode(node.id)">
+  <div ui-tree-handle class="tree-node tree-node-content" ng-class="{selected: node.id == node_id, padded: node.nodes.length === 0}" ng-mousedown="selectNode(node.id)">
     <a class="btn btn-xs" ng-if="node.nodes && node.nodes.length > 0" data-nodrag ng-click="toggle(this)">
       <span
       class="glyphicon"
@@ -25,7 +25,7 @@
 <div style="display: flex">
   <div class="section_left">
     <ul class="nav nav-pills" role="tablist">
-      <li role="presentation" class="active"><a><i class="fa fa-paw"></i> Project</a></li>
+      <li role="presentation" class="active"><a href="/"><i class="fa fa-paw"></i> Project</a></li>
     </ul>
     
     <div ui-tree id="tree-root" data-drag-delay="500">
@@ -37,14 +37,14 @@
 
   <div class="section_right">
     <ul class="nav nav-pills" role="tablist">
-      <li role="presentation" ng-class="{active: state.current.name == 'project.summary'}"><a href="#/{{id}}/summary">Summary</a></li>
-      <li role="presentation" ng-class="{active: state.current.name == 'project.data'}"><a href="#/{{id}}/data">Data</a></li>
-      <li role="presentation" ng-class="{active: state.current.name == 'project.tracking'}"><a href="#/{{id}}/tracking">Tracking</a></li>
+      <li role="presentation" ng-class="{active: state.current.name == 'project.summary'}"><a href="#/{{project_id}}/{{node_id}}/summary">Summary</a></li>
+      <li role="presentation" ng-class="{active: state.current.name == 'project.data'}"><a href="#/{{project_id}}/{{node_id}}/data">Data</a></li>
+      <li role="presentation" ng-class="{active: state.current.name == 'project.tracking'}"><a href="#/{{project_id}}/{{node_id}}/tracking">Tracking</a></li>
     </ul>
     <form class="form-inline">
       <input ng-model="node.title" class="form-control taskname" size=50>
     </form>
-    <div ui-view="area"></div>
+    <div ui-view></div>
   </div>
 </div>
 

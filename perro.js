@@ -303,69 +303,114 @@ var getSummaryTable = function(node) {
 var MyApp = angular.module('MyApp', ['ui.router', 'ui.tree', 'highcharts-ng']);
 
 MyApp.config(function($stateProvider, $urlRouterProvider) {
-  $urlRouterProvider.otherwise("/1/tracking");
+  $urlRouterProvider.otherwise("/");
 
   $stateProvider
+  .state('init', {
+    url: '/',
+    templateUrl: 'init.html',
+    controller: 'InitController'
+  })
   .state('project', {
-    url: "/{id}",
-    views: {
-      'project': {
-        templateUrl: "project.html",
-        controller: 'ProjectController'
-      },
-    },
+    url: "/{project_id}/{node_id}",
+    templateUrl: "project.html",
+    controller: 'ProjectController'
   })
   .state('project.summary', {
     url: '/summary',
-    views: {
-      'area': {
-        templateUrl: 'summary.html',
-        controller: 'SummaryController'
-      }
-    }
+    templateUrl: 'summary.html',
+    controller: 'SummaryController'
   })
   .state('project.data', {
     url: '/data',
-    views: {
-      'area': {
-        templateUrl: 'data.html',
-        controller: 'DataController'
-      }
-    }
+    templateUrl: 'data.html',
+    controller: 'DataController'
   })
   .state('project.tracking', {
     url: '/tracking',
-    views: {
-      'area': {
-        templateUrl: 'tracking.html',
-        controller: 'TrackingController'
-      }
-    }
+    templateUrl: 'tracking.html',
+    controller: 'TrackingController'
   });
+});
+
+var LocalStorage = {
+  'save': function(project_id, data) {
+    console.assert(project_id);
+    var perro_data = window.localStorage.perro;
+
+    if (perro_data === undefined) {
+      perro_data = {};
+    } else {
+      perro_data = JSON.parse(perro_data);
+    }
+
+    perro_data[project_id.toString()] = data;
+
+    window.localStorage.perro = JSON.stringify(perro_data);
+  },
+
+  'load': function(project_id) {
+    var perro_data = window.localStorage.perro;
+
+    if (perro_data === undefined) {
+      return undefined;
+    } else {
+      perro_data = JSON.parse(perro_data);
+      return perro_data[project_id.toString()];
+    }
+  },
+
+  'list': function() {
+    var perro_data = window.localStorage.perro;
+
+    if (perro_data === undefined) {
+      return [];
+    } else {
+      perro_data = JSON.parse(perro_data);
+
+      return Object.keys(perro_data);
+    }
+  }
+};
+
+MyApp.controller('InitController', function($scope, $state) {
+  $scope.projects = LocalStorage.list();
+
+  $scope.newProject = function() {
+    $state.go('project', {'project_id': $scope.name});
+  };
 });
 
 MyApp.controller('ProjectController', function($scope, $state, $stateParams) {
 
+  $scope.project_id = $stateParams.project_id;
+
   $scope.state = $state;
 
-  var data = window.localStorage['project.data'];
-  if (data === undefined) {
-    $scope.data = sample_data;
-  } else {
-    $scope.data = JSON.parse(data);
+  $scope.data = LocalStorage.load($stateParams.project_id);
 
-    if ($scope.data.length === 0) {
-      $scope.data = sample_data;
-    }
+  if ($scope.data === undefined) {
+    $scope.data = sample_data;
   }
 
-  if ($stateParams.id) {
-    $scope.id = $stateParams.id;
-    $scope.node = getNode($scope.data, $stateParams.id);
+  if ($stateParams.node_id) {
+    $scope.node = getNode($scope.data, $stateParams.node_id);
+
+    if ($scope.node === undefined) {
+      $scope.node = $scope.data[0];
+      $state.go($state.current.name, {'node_id': $scope.node.id});
+      return;
+    } else {
+      $scope.node_id = $stateParams.node_id;  
+    }
+  } else {
+    $scope.node = $scope.data[0];
+    $scope.node_id = $scope.node.id;
+    return;
   }
 
   $scope.$watch('data', function() {
-    window.localStorage['project.data'] = JSON.stringify($scope.data);
+    LocalStorage.save($stateParams.project_id, $scope.data);
   }, true);
 
   $scope.removeSubItem = function (item) {
@@ -385,8 +430,8 @@ MyApp.controller('ProjectController', function($scope, $state, $stateParams) {
     });
   };
 
-  $scope.selectNode = function(id) {
-    $state.go($state.current.name, {'id': id});
+  $scope.selectNode = function(node_id) {
+    $state.go($state.current.name, {'node_id': node_id});
   };
 
 });

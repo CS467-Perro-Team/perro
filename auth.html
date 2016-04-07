@@ -1,9 +1,12 @@
 
 <h2>Perro Projects</h2>
 
+<button ng-show="!authorized" ng-click="handleAuthClick()">Authorize</button>
+
+
 <ul>
   <li ng-repeat="project in projects">
-    <a href="#/{{project}}/">{{project}}</a>
+    <a href="#/{{project.id}}/">{{project.title}}</a>
   </li>
 </ul>
 

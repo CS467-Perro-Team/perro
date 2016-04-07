@@ -306,10 +306,10 @@ MyApp.config(function($stateProvider, $urlRouterProvider) {
   $urlRouterProvider.otherwise("/");
 
   $stateProvider
-  .state('init', {
+  .state('auth', {
     url: '/',
-    templateUrl: 'init.html',
-    controller: 'InitController'
+    templateUrl: 'auth.html',
+    controller: 'AuthController'
   })
   .state('project', {
     url: "/{project_id}/{node_id}",
@@ -373,13 +373,78 @@ var LocalStorage = {
   }
 };
 
-MyApp.controller('InitController', function($scope, $state) {
-  $scope.projects = LocalStorage.list();
+function onGapiLoaded() {
+  window.init();
+}
+
+MyApp.controller('AuthController', function($scope, $window, $timeout) {
+  var CLIENT_ID = '1042198886117-8lb2k79asp16nfcdo07bs013p5dq06ph.apps.googleusercontent.com';
+  var SCOPES = ['https://www.googleapis.com/auth/drive.file'];
+
+  $scope.authorized = false;
+
+  $window.init = function() {
+    $scope.checkAuth();
+  };
+
+  $scope.checkAuth = function() {
+    gapi.auth.authorize(
+      {
+        'client_id': CLIENT_ID,
+        'scope': SCOPES.join(' '),
+        'immediate': true
+      }, handleAuthResult);
+  };
+
+  var handleAuthResult = function(authResult) {
+    if (authResult && !authResult.error) {
+      gapi.client.load('drive', 'v2', function() {
+        console.log('drive authorized');
+        $timeout(function() {
+          $scope.authorized = true;
+          $scope.getProjects();
+        });
+      });
+    } else {
+      console.log('drive failed to authorize');
+    }
+  };
+
+  $scope.handleAuthClick = function() {
+    gapi.auth.authorize({
+        client_id: CLIENT_ID,
+        scope: SCOPES,
+        immediate: false},
+      handleAuthResult);
+    return false;
+  };
+
+  $scope.getProjects = function() {
+    var request = gapi.client.drive.files.list({
+      q: 'title contains \'perro\' and trashed=false',
+    });
+
+    request.execute(function(resp) {
+      console.log(resp.items);
+      $timeout(function() {
+        $scope.projects = resp.items;
+      });
+    });
+  };
 
   $scope.newProject = function() {
-    $state.go('project', {'project_id': $scope.name});
+    var request = gapi.client.drive.files.insert({
+      'title': $scope.name + '.perro'
+    });
+
+    request.execute(function(resp) {
+      console.log(resp);
+    });
+    //$state.go('project', {'project_id': $scope.name});
   };
+
 });
+
 
 MyApp.controller('ProjectController', function($scope, $state, $stateParams) {
 

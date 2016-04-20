@@ -99,7 +99,8 @@
 
     <script src="https://apis.google.com/js/client.js?onload=onGapiLoaded"></script>
   </head>
-<body>
+<body ng-controller="AuthController">
+  <button ng-show="!authorized" ng-click="handleAuthClick()">Authorize</button>
   <div ui-view></div>
 </body>
 </html>

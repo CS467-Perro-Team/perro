@@ -28,11 +28,14 @@
       <li role="presentation" class="active"><a href="/"><i class="fa fa-paw"></i> Project</a></li>
     </ul>
     
-    <div ui-tree id="tree-root" data-drag-delay="500">
+    <div ng-if="data" ui-tree id="tree-root" data-drag-delay="500">
       <ol ui-tree-nodes ng-model="data">
         <li ng-repeat="node in data" ui-tree-node ng-include="'nodes_renderer.html'"></li>
       </ol>
     </div>
+
+    <i ng-if="data === undefined" class="fa fa-spinner fa-pulse fa-fw margin-bottom"></i>
+
   </div>
 
   <div class="section_right">

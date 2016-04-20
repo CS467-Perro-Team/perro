@@ -1,14 +1,15 @@
 
 <h2>Perro Projects</h2>
 
-<button ng-show="!authorized" ng-click="handleAuthClick()">Authorize</button>
+Projects:
 
-
-<ul>
+<ul ng-if="projects">
   <li ng-repeat="project in projects">
-    <a href="#/{{project.id}}/">{{project.title}}</a>
+    <a href="#/{{project.id}}/0/summary">{{project.title}}</a>
   </li>
 </ul>
+
+<i ng-if="projects === undefined" class="fa fa-spinner fa-pulse fa-fw margin-bottom"></i>
 
 <form class="form-inline" ng-submit="newProject()">
 <input type="text" class="form-control"  ng-model="name">

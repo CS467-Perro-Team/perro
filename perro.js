@@ -306,28 +306,28 @@ MyApp.config(function($stateProvider, $urlRouterProvider) {
   $urlRouterProvider.otherwise("/");
 
   $stateProvider
-  .state('auth', {
+  .state('init', {
     url: '/',
-    templateUrl: 'auth.html',
-    controller: 'AuthController'
+    templateUrl: 'init.html',
+    controller: 'InitController'
   })
   .state('project', {
-    url: "/{project_id}/{node_id}",
+    url: "/{project_id}",
     templateUrl: "project.html",
     controller: 'ProjectController'
   })
   .state('project.summary', {
-    url: '/summary',
+    url: '/{node_id}/summary',
     templateUrl: 'summary.html',
     controller: 'SummaryController'
   })
   .state('project.data', {
-    url: '/data',
+    url: '/{node_id}/data',
     templateUrl: 'data.html',
     controller: 'DataController'
   })
   .state('project.tracking', {
-    url: '/tracking',
+    url: '/{node_id}/tracking',
     templateUrl: 'tracking.html',
     controller: 'TrackingController'
   });
@@ -402,7 +402,7 @@ MyApp.controller('AuthController', function($scope, $window, $timeout) {
         console.log('drive authorized');
         $timeout(function() {
           $scope.authorized = true;
-          $scope.getProjects();
+          $window.onAuthorized();
         });
       });
     } else {
@@ -419,7 +419,17 @@ MyApp.controller('AuthController', function($scope, $window, $timeout) {
     return false;
   };
 
+});
+
+
+MyApp.controller('InitController', function($scope, $window, $timeout) {
+  $window.onAuthorized = function() {
+    $scope.getProjects();
+  };
+
   $scope.getProjects = function() {
+    $scope.projects = undefined;
+
     var request = gapi.client.drive.files.list({
       q: 'title contains \'perro\' and trashed=false',
     });
@@ -443,39 +453,80 @@ MyApp.controller('AuthController', function($scope, $window, $timeout) {
     //$state.go('project', {'project_id': $scope.name});
   };
 
+  if ($scope.authorized) {
+    $scope.getProjects();
+  }
 });
 
-
-MyApp.controller('ProjectController', function($scope, $state, $stateParams) {
+MyApp.controller('ProjectController', function($scope, $state, $stateParams, $http, $window, $timeout) {
 
   $scope.project_id = $stateParams.project_id;
 
   $scope.state = $state;
 
-  $scope.data = LocalStorage.load($stateParams.project_id);
+  $window.onAuthorized = function() {
+    $scope.loadProject();
+  };
 
-  if ($scope.data === undefined) {
-    $scope.data = sample_data;
-  }
+  $scope.loadProject = function() {
+    var accessToken = gapi.auth.getToken().access_token;
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', 'https://www.googleapis.com/drive/v2/files/' + $scope.project_id + '?alt=media');
+    xhr.setRequestHeader('Authorization', 'Bearer ' + accessToken);
 
-  if ($stateParams.node_id) {
-    $scope.node = getNode($scope.data, $stateParams.node_id);
+    xhr.onload = function() {
+      console.log(xhr.responseText);
+      $timeout(function() {
+        $scope.data = xhr.responseText;
 
-    if ($scope.node === undefined) {
-      $scope.node = $scope.data[0];
-      $state.go($state.current.name, {'node_id': $scope.node.id});
-      return;
-    } else {
-      $scope.node_id = $stateParams.node_id;  
-    }
-  } else {
-    $scope.node = $scope.data[0];
-    $scope.node_id = $scope.node.id;
-    return;
-  }
+        if ($scope.data === undefined || $scope.data === '') {
+          $scope.data = sample_data;
+        } else {
+          $scope.data = JSON.parse($scope.data);
+        }
 
+        if ($stateParams.node_id) {
+          $scope.node = getNode($scope.data, $stateParams.node_id);
+
+          if ($scope.node === undefined) {
+            $scope.node = $scope.data[0];
+            $state.go($state.current.name, {'node_id': $scope.node.id});
+            return;
+          } else {
+            $scope.node_id = $stateParams.node_id;  
+          }
+        }
+      });
+    };
+    xhr.onerror = function() {
+      console.log('Failed to load project');
+    };
+
+    xhr.send();
+  };
+
+  $scope.saveProject = function() {
+    var accessToken = gapi.auth.getToken().access_token;
+    var xhr = new XMLHttpRequest();
+
+    xhr.open('PUT', 'https://www.googleapis.com/upload/drive/v2/files/' + $scope.project_id);
+    xhr.setRequestHeader('Authorization', 'Bearer ' + accessToken);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+
+    xhr.onload = function(e) {
+      console.log(e);
+    };
+    xhr.onerror = function() {
+      console.log('Upload failed');
+    };
+    xhr.send(JSON.stringify($scope.data));
+  };
+  
   $scope.$watch('data', function() {
-    LocalStorage.save($stateParams.project_id, $scope.data);
+    if (gapi.auth) {
+      $scope.saveProject();
+    }
+   
   }, true);
 
   $scope.removeSubItem = function (item) {
@@ -496,12 +547,28 @@ MyApp.controller('ProjectController', function($scope, $state, $stateParams) {
   };
 
   $scope.selectNode = function(node_id) {
-    $state.go($state.current.name, {'node_id': node_id});
+    console.log('select ' + node_id);
+    $scope.node_id = node_id;
+    $scope.node = getNode($scope.data, node_id);
+
+    if ($state.current.name === 'project') {
+      $state.go('project.summary', {'node_id': node_id});
+    } else {
+      $state.go($state.current.name, {'node_id': node_id});
+    }
   };
 
+  if ($scope.data === undefined && $scope.authorized) {
+    $scope.loadProject();
+  }
 });
 
-MyApp.controller('DataController', function($scope, $state) {
+MyApp.controller('DataController', function($scope, $state, $stateParams) {
+
+  $scope.node = $scope.data[$stateParams.node_id];
+
+  $scope.node = $scope.data[0];
+  $scope.node_id = $scope.node.id;
 
   $scope.addData = function() {
     if ($scope.$parent.node === undefined) {
@@ -556,8 +623,10 @@ MyApp.controller('DataController', function($scope, $state) {
 });
 
 MyApp.controller('TrackingController', function($scope, $state) {
-  $scope.series = getTrackingSeries([$scope.$parent.node]);
-
+  if ($scope.$parent && $scope.$parent.node) {
+     $scope.series = getTrackingSeries([$scope.$parent.node]);
+  }
+  
   $scope.chart_config = {
     options: {
       //This is the Main Highcharts chart config. Any Highchart options are valid here.
@@ -582,5 +651,11 @@ MyApp.controller('TrackingController', function($scope, $state) {
 });
 
 MyApp.controller('SummaryController', function($scope, $state) {
-  $scope.summary = getSummaryTable([$scope.$parent.node]);
+  $scope.$parent.$watch('node', function() {
+    if ($scope.$parent && $scope.$parent.node) {
+      $scope.summary = getSummaryTable([$scope.$parent.node]);
+    }
+    
+  }, true);
+
 });

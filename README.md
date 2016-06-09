@@ -2,6 +2,8 @@
 
 Perro Project is a lightweight project management tool for tracking effort estimates and velocity.
 
+Live demo: [robertwrose.com/perro](http://www.robertwrose.com/perro)
+
 ![screenshot](screenshot.png)
 
 ## Data security and storage
